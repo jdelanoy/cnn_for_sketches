@@ -40,7 +40,7 @@ for i in range(nb_img):
     pad_w1 = round((normal_r.shape[1]-norm_size[1])/2);
     pad_w2 = (normal_r.shape[1]-norm_size[1])-pad_w1;
     normal_r = util.crop(normal_r, [[pad_h1,pad_h2], [pad_w1, pad_w2], [0,0]]);
-    normal_classif = cluster_normals(normal_r, clusters);
+    normal_classif = cluster_normals(normal_r*2-1, clusters);
 
     #resize/save images
     depth_r = transform.rescale(depth_img, img_size[0]/depth_img.shape[0])
