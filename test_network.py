@@ -30,10 +30,12 @@ path='./NYU_dataset/';
 
 clusters = np.load(path+'clusters.npy');
 
+train_loss = np.zeros(2000)
 #train the network and see intermediate results
-for i in range(20):
+for i in range(2000):
     print 'step '+str(i)
     solver.step(1)
+    train_loss[i] = solver.net.blobs['loss'].data
     #plt.subplot(2, 5, 1)
     #plt.imshow(transformer.deprocess('data', solver.net.blobs['data'].data[0]))
     #plt.subplot(2, 5, 2)
