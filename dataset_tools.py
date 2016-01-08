@@ -45,7 +45,7 @@ def cluster_normals(normals, clusters):
             #find the min
             classif_normals[l,c,np.argmin(dist)] = 1;
 
-return classif_normals
+    return classif_normals
 
 
 #def random_crop(image, size):
