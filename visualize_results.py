@@ -18,7 +18,7 @@ net = caffe.Net('deploy_coarse.prototxt',
                 'snapshot_wang_iter_5000.caffemodel',
                 caffe.TEST)
 
-dataset = h5py.File(path+'test_normal.h5', 'r')
+dataset = h5py.File(path+'test_normal_center.h5', 'r')
 images = dataset['data'];
 normals = dataset['label'];
 gtnormals =  dataset['gt'];
@@ -41,6 +41,3 @@ for i in range(images.shape[0]):
     plt.imshow(classifRGB)
     plt.show()
 
-
-
-    
