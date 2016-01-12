@@ -74,9 +74,10 @@ for i in range(niter):
     #plt.imshow(norm)
     #plt.show()
     #compute clustering
-    label = cluster_normals(norm[input_size[0]/2, input_size[1]/2]*2-1, clusters);
+    center = norm[input_size[0]/2, input_size[1]/2].reshape((1,1,3));
+    label = cluster_normals(center*2-1, clusters);
     solver.net.blobs['data'].data[0]=img.transpose(2,0,1);
-    solver.net.blobs['label'].data[0] = label;
+    solver.net.blobs['label'].data[0] = np.argmax(label);
     solver.step(1)
     train_loss[i] = solver.net.blobs['loss'].data
 
