@@ -5,7 +5,7 @@ from skimage import util
 
 #principal script
 
-nb_img = 10;
+nb_img = 1449;
 nb_clusters = 20;
 img_size = [240.0, 320.0];
 norm_size = [240.0, 320.0];
@@ -20,8 +20,8 @@ depth_path=path + 'raw_data/depths/';
 image_path=path + 'raw_data/images/';
 
 #sample cluster for normals
-#clusters = clustering_k_means(nb_img, path + 'raw_data/normals_resize/')
-clusters = np.load(path+'clusters.npy');
+clusters = clustering_k_means(nb_img, path + 'raw_data/normals_resize/')
+#clusters = np.load(path+'clusters.npy');
 
 print 'Clustering done'
 

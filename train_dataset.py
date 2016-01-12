@@ -39,7 +39,7 @@ clusters = np.load(path+'clusters.npy');
 nb_img = images.shape[0];
 
 
-niter = 10
+niter = 5000
 test_interval=100
 test_iter=350
 train_loss = np.zeros(niter)
@@ -50,12 +50,12 @@ for i in range(niter):
     #take image i
     im = i%nb_img;
     #plt.subplot(2,4,1)
-    #plt.imshow(images[i])
+    #plt.imshow(images[i].transpose(1,2,0))
     #plt.subplot(2,4,5)
-    #plt.imshow(gtnormals[i])
+    #plt.imshow(gtnormals[i].transpose(1,2,0))
     #apply random transform to image AND normals
     #crop
-    img,norm=random_crop(images[im], gtnormals[im], input_size);
+    img,norm=random_crop(images[im].transpose(1,2,0), gtnormals[im].transpose(1,2,0), input_size);
     #plt.subplot(2,4,2)
     #plt.imshow(img)
     #plt.subplot(2,4,6)
@@ -74,10 +74,9 @@ for i in range(niter):
     #plt.imshow(norm)
     #plt.show()
     #compute clustering
-    normal_classif = cluster_normals(norm*2-1, clusters);
-    label = normal_classif[input_size[0]/2, input_size[1]/2]
-    solver.net.blobs['data'].data[:]=img;
-    solver.net.blobs['label'].data[:] = label;
+    label = cluster_normals(norm[input_size[0]/2, input_size[1]/2]*2-1, clusters);
+    solver.net.blobs['data'].data[0]=img.transpose(2,0,1);
+    solver.net.blobs['label'].data[0] = label;
     solver.step(1)
     train_loss[i] = solver.net.blobs['loss'].data
 

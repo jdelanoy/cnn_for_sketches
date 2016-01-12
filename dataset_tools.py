@@ -44,7 +44,7 @@ def cluster_normals(normals, clusters):
         for c in range(width):
             #compute all distances
             dist = spatial.distance_matrix(clusters, np.reshape(normals[l, c, :],(1,3)));
-            min3=[0,0,0]
+            #min3=[0,0,0]
             #find the min
             classif_normals[l,c,np.argmin(dist)] = 1;
 
@@ -74,7 +74,7 @@ def central_crop(image, size):
 
 def random_scaling(image, normal, size):
     scale = random.uniform(1.0, 1.5);
-    print scale
+    #print scale
     #resize images
     img_r = transform.rescale(image, scale);
     img_r = central_crop(img_r, size);
@@ -92,7 +92,7 @@ def random_scaling(image, normal, size):
     
 def random_color(image):
     scale = random.uniform(0.8, 1.2);
-    print scale
+    #print scale
     image = image * scale;
     for line in range(image.shape[0]):
         for col in range(image.shape[1]):
