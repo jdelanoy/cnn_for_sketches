@@ -183,20 +183,6 @@ layer {
   bottom: "f_1"
   top: "f_2"
   inner_product_param {
-    num_output: 12760
+    num_output: 20
   }
 }
-layer {
-   name: "reshape"
-    type: "Reshape"
-    bottom: "f_2"
-    top: "coarse"
-    reshape_param {
-      shape {
-        dim: 0  # copy the dimension from below
-        dim: 20
-        dim: 22
-        dim: 29 # 
-      }
-    }
-  }

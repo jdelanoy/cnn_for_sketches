@@ -15,10 +15,10 @@ path='./NYU_dataset/';
 
 caffe.set_mode_cpu()
 net = caffe.Net('deploy_coarse.prototxt',
-                'snapshot_wang_iter_5000.caffemodel',
+                'snapshot_wang_000001_nolearn_iter_3000.caffemodel',
                 caffe.TEST)
 
-dataset = h5py.File(path+'test_normal_center.h5', 'r')
+dataset = h5py.File(path+'test_normal.h5', 'r')
 images = dataset['data'];
 normals = dataset['label'];
 gtnormals =  dataset['gt'];
@@ -29,6 +29,10 @@ for i in range(images.shape[0]):
     net.blobs['data'].data[...] = images[i];
     out = net.forward();
     classif = out['coarse'][0];
+    #print classif
+    #print np.argmax(classif)
+    #print normals[i]
+    
     classifRGB = clusters[np.argmax(classif,0)];
     #visualization of results
     plt.subplot(1, 4, 1)
@@ -36,8 +40,8 @@ for i in range(images.shape[0]):
     plt.subplot(1, 4, 2)
     plt.imshow(gtnormals[i].transpose(1,2,0))
     plt.subplot(1, 4, 3)
-    plt.imshow(clusters[normals[i]])
+    plt.imshow(clusters[normals[i]]/2+0.5)
     plt.subplot(1, 4, 4)
-    plt.imshow(classifRGB)
+    plt.imshow(classifRGB/2+0.5)
     plt.show()
 

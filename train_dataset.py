@@ -30,8 +30,8 @@ transformer.set_raw_scale('data', 255)  # the reference model operates on images
 
 path='./NYU_dataset/';
 
-dataset = h5py.File(path+'train_normal_center.h5', 'r')
-images = dataset['data'];
+dataset = h5py.File(path+'train_normal.h5', 'r')
+images = dataset['images'];
 normals = dataset['label'];
 gtnormals =  dataset['gt'];
 clusters = np.load(path+'clusters.npy');
@@ -40,15 +40,17 @@ nb_img = images.shape[0];
 
 
 niter = 5000
-test_interval=100
-test_iter=350
+test_interval=50
+test_iter=200
 train_loss = np.zeros(niter)
 test_loss = np.zeros(niter)
 input_size=[228.0,304.0];
+norm_size=[22.0,29.0];
 #train the network and see intermediate results
 for i in range(niter):
     #take image i
     im = i%nb_img;
+    #img = central_crop(images[im].transpose(1,2,0), input_size);
     #plt.subplot(2,4,1)
     #plt.imshow(images[i].transpose(1,2,0))
     #plt.subplot(2,4,5)
@@ -74,13 +76,17 @@ for i in range(niter):
     #plt.imshow(norm)
     #plt.show()
     #compute clustering
-    center = norm[input_size[0]/2, input_size[1]/2].reshape((1,1,3));
-    label = cluster_normals(center*2-1, clusters);
+    #center = norm[input_size[0]/2, input_size[1]/2].reshape((1,1,3));
+    #label = cluster_normals(center*2-1, clusters);
+    normal_r = transform.rescale(norm, norm_size[0]/norm.shape[0])
+    normal_r = central_crop(normal_r, norm_size);
+    label = cluster_normals(normal_r*2-1, clusters);
+    #label = normals[im];
     solver.net.blobs['data'].data[0]=img.transpose(2,0,1);
-    solver.net.blobs['label'].data[0] = np.argmax(label);
+    #solver.net.blobs['label'].data[0] = np.argmax(label);
+    solver.net.blobs['label'].data[0] = np.argmax(label,2);
     solver.step(1)
     train_loss[i] = solver.net.blobs['loss'].data
-
     
     if i % test_interval == 0:
         print 'Iteration', i, 'testing...'
@@ -88,72 +94,11 @@ for i in range(niter):
         for test_it in range(test_iter):
             solver.test_nets[0].forward();
             loss += solver.test_nets[0].blobs['loss'].data
-        test_loss[i // test_interval] = loss / test_iter
+        test_loss[i // test_interval] = loss/test_iter
         print train_loss[i]
         print test_loss[i // test_interval]
+
+np.save('train_loss_data',train_loss);
+np.save('test_loss_data',test_loss[:50]);
+
     
-    
-    #plt.subplot(2, 5, 1)
-    #plt.imshow(transformer.deprocess('data', solver.net.blobs['data'].data[0]))
-    #plt.subplot(2, 5, 2)
-    #plt.imshow(clusters[solver.net.blobs['label'].data[0].astype(int)])
-    #print solver.net.blobs['label'].data[0]
-    #plt.subplot(2, 5, 3)
-    filters = solver.net.params['conv1'][0].data
-    print 'conv1 param'
-    print np.isnan(solver.net.params['conv1'][0].data).any()
-    print np.isnan(solver.net.blobs['conv1'].data).any()
-    #print filters[0,0]
-    #vis_square(filters.transpose(0, 2, 3, 1))
-    #plt.subplot(2, 5, 4)
-    filters = solver.net.params['conv2'][0].data
-    print 'conv2 param'
-    print np.isnan(solver.net.params['conv2'][0].data).any()
-    print np.isnan(solver.net.blobs['conv2'].data).any()
-    #print filters[0,0]
-    #vis_square(filters[:24,:24].reshape(24**2, 5, 5))
-    #plt.subplot(2, 5, 5)
-    filters = solver.net.params['conv3'][0].data
-    print 'conv3 param'
-    print np.isnan(solver.net.params['conv3'][0].data).any()
-    print np.isnan(solver.net.blobs['conv3'].data).any()
-    #print filters[0,0]
-    #vis_square(filters[:24, :24].reshape(24**2, 3, 3))
-    #plt.subplot(2, 5, 6)
-    filters = solver.net.params['conv4'][0].data
-    print 'conv4 param'
-    print np.isnan(solver.net.params['conv4'][0].data).any()
-    print np.isnan(solver.net.blobs['conv4'].data).any()
-    #print filters[0,0]
-    #vis_square(filters[:24, :24].reshape(24**2, 3, 3))
-    #plt.subplot(2, 5, 7)
-    filters = solver.net.params['conv5'][0].data
-    print 'conv5 param'
-    print np.isnan(solver.net.params['conv5'][0].data).any()
-    print np.isnan(solver.net.blobs['conv5'].data).any()
-    #print filters[0,0]
-    feat = solver.net.blobs['conv5'].data[0, :100]
-    #vis_square(feat, padval=1)
-    #vis_square(filters[:24, :24].reshape(24**2, 3, 3))
-    #plt.subplot(2, 5, 8)
-    filters = solver.net.params['full1'][0].data
-    print 'full1 param'
-    print np.isnan(solver.net.params['full1'][0].data).any()
-    print np.isnan(solver.net.blobs['f_1'].data).any()
-    #print filters[:5, :5]
-    #plt.imshow(filters[:100, :100])
-    #plt.subplot(2, 5, 9)
-    filters = solver.net.params['full2'][0].data
-    print 'full2 param'
-    print np.isnan(solver.net.params['full2'][0].data).any()
-    print np.isnan(solver.net.blobs['f_2'].data).any()
-    #print filters[:5, :5]
-    #plt.imshow(filters[:100, :100])
-    #plt.subplot(2, 5, 10)
-    classif = solver.net.blobs['coarse'].data[0];
-    print np.isnan(solver.net.blobs['coarse'].data).any()
-    #plt.imshow(clusters[np.argmax(classif,0)])
-    #print classif[:5,:5,:5]
-    print '----------------------loss'
-    print solver.net.blobs['loss'].data
-    #plt.show()

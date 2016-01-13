@@ -11,7 +11,7 @@ import sklearn.cross_validation
 nb_img = 1449;
 nb_clusters = 20;
 img_size = [240.0, 320.0];
-norm_size = [240.0, 320.0];
+norm_size = [22.0, 29.0];
 input_size=[228.0,304.0];
 
 path='./NYU_dataset/';
@@ -23,7 +23,7 @@ image_path=path + 'data/image_';
 
 #initialize arrays
 normals = np.ndarray((nb_img, norm_size[0], norm_size[1]), np.uint8);
-normalsRGB = np.ndarray((nb_img, 3, norm_size[0], norm_size[1]), np.uint8);
+normalsRGB = np.ndarray((nb_img, 3, img_size[0], img_size[1]), np.uint8);
 normals_center = np.ndarray((nb_img), np.uint8);
 images = np.ndarray((nb_img, 3, img_size[0], img_size[1]), np.uint8);
 crop_images = np.ndarray((nb_img, 3, 228, 304), np.uint8);
@@ -54,7 +54,6 @@ with h5py.File(train_filename, 'w') as f:
     f['gt'] = gt
 with open(path+'train_normal.txt', 'w') as f:
     f.write(train_filename + '\n')
-#test dataset contains the ground truth normals
 with h5py.File(test_filename, 'w') as f:
     f['data'] = cimT
     f['images'] = imT

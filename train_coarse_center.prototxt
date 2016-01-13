@@ -9,7 +9,7 @@ layer {
   }
 
   hdf5_data_param {
-    source: "NYU_dataset/train_normal.txt"
+    source: "NYU_dataset/train_normal_center.txt"
     batch_size: 1
   }
 }
@@ -24,7 +24,7 @@ layer {
   }
 
   hdf5_data_param {
-    source: "NYU_dataset/test_normal.txt"
+    source: "NYU_dataset/test_normal_center.txt"
     batch_size: 1
   }
 }
@@ -309,7 +309,7 @@ layer {
   name: "full2"
   type: "InnerProduct"
   bottom: "f_1"
-  top: "f_2"
+  top: "coarse"
   param {
     lr_mult: 1
     decay_mult: 1
@@ -319,7 +319,7 @@ layer {
     decay_mult: 0
   }
   inner_product_param {
-    num_output: 12760
+    num_output: 20
     weight_filler {
       type: "gaussian"
       std: 0.005
@@ -330,22 +330,6 @@ layer {
     }
   }
 }
-layer {
-   name: "reshape"
-    type: "Reshape"
-    bottom: "f_2"
-    top: "coarse"
-    reshape_param {
-      shape {
-        dim: 0  # copy the dimension from below
-        dim: 20
-        dim: 22
-        dim: 29 # 
-      }
-    }
-  }
- 
-
 
 
 layer {
