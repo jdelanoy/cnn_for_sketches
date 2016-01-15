@@ -9,8 +9,8 @@ layer {
   }
 
   hdf5_data_param {
-    source: "NYU_dataset/train_normal.txt"
-    batch_size: 1
+    source: "/home/NYU_dataset/train_normal_full.txt"
+    batch_size: 32
   }
 }
 
@@ -24,8 +24,8 @@ layer {
   }
 
   hdf5_data_param {
-    source: "NYU_dataset/test_normal.txt"
-    batch_size: 1
+    source: "/home/NYU_dataset/test_normal_full.txt"
+    batch_size: 32
   }
 }
 

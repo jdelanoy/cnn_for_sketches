@@ -77,16 +77,15 @@ def random_scaling(image, normal, size):
     #print scale
     #resize images
     img_r = transform.rescale(image, scale);
-    img_r = central_crop(img_r, size);
     norm_r = transform.rescale(normal, scale);
-    norm_r = central_crop(norm_r, size);
+    img_r, norm_r = random_crop(img_r, norm_r, size);
     #TODO modify depth : divide by scale
     #modify normals
-    for line in range(norm_r.shape[0]):
-        for col in range(norm_r.shape[1]):
-            norm_r[line,col,2] = norm_r[line,col,2] * scale;
-            norm = np.linalg.norm(norm_r[line,col]);
-            norm_r[line,col] = norm_r[line,col]/norm;
+    #for line in range(norm_r.shape[0]):
+    #    for col in range(norm_r.shape[1]):
+    #        norm_r[line,col,2] = norm_r[line,col,2] * scale;
+    #        norm = np.linalg.norm(norm_r[line,col]);
+    #        norm_r[line,col] = norm_r[line,col]/norm;
     return img_r, norm_r;
             
     
