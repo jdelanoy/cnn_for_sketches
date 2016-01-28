@@ -18,8 +18,8 @@ clusters =  dataset['clusters'][:,:];
 
 
 nimg_input = images.shape[0]
-batch_size = 2000;
-nimg_output = 10*batch_size;
+batch_size = nimg_input;
+nimg_output = 8*batch_size;
 
 
 #initialize arrays
@@ -30,15 +30,13 @@ out_images = np.ndarray((nimg_output , 3, input_size[0], input_size[1]), np.uint
 beg = time.time()
 for i in range(nimg_output):
     im = i%nimg_input
-    img = transform.rescale(images[im], 0.6);
-    norm = transform.rescale(normals[im], 0.6);
+
+    #downscale and crop
+    img,norm=random_scaling(images[im], normals[im], input_size, 0.5, 1.0);
+   
+    #img = random_color(img);
     
-    #apply transformation
-    img,norm=random_crop(img, norm, input_size);
-    img,norm=random_scaling(img, norm, input_size);
-    img = random_color(img);
-    
-    out_images[i] = img.transpose(2,0,1);
+    out_images[i] = img.transpose(2,0,1)*255.0;
     
     center = norm[input_size[0]/2, input_size[1]/2].reshape((1,1,3));
     label = cluster_normals(center*2-1, clusters);
@@ -49,7 +47,7 @@ for i in range(nimg_output):
     label = cluster_normals(normal_r*2-1, clusters);
     out_normals[i] = np.argmax(label,2)
     
-    if((i+1)%500 == 0):
+    if((i+1)%batch_size == 0):
         print i+1
         print time.time()-beg
     #plt.subplot(1,3,1)
@@ -68,14 +66,14 @@ f_train = open(train_center_filename+'.txt', 'w')
 f_test = open(train_full_filename+'.txt', 'w')
 for i in range(nimg_output/batch_size):
     with h5py.File(train_center_filename+str(i)+'.h5', 'w') as f:
-         f['data'] = out_images[i*2000:(i+1)*2000]
-         f['label'] = out_normals_center[i*2000:(i+1)*2000]
+         f['data'] = out_images[i*batch_size:(i+1)*batch_size]
+         f['label'] = out_normals_center[i*batch_size:(i+1)*batch_size]
          f['clusters'] = clusters
     f_train.write(train_center_filename+str(i)+'.h5' + '\n')
     
     with h5py.File(train_full_filename+str(i)+'.h5', 'w') as f:
-        f['data'] = out_images[i*2000:(i+1)*2000]
-        f['label'] = out_normals[i*2000:(i+1)*2000]
+        f['data'] = out_images[i*batch_size:(i+1)*batch_size]
+        f['label'] = out_normals[i*batch_size:(i+1)*batch_size]
         f['clusters'] = clusters
     f_test.write(train_full_filename+str(i)+'.h5' + '\n')
 
@@ -97,13 +95,13 @@ test_images = np.ndarray((nimg_input , 3, input_size[0], input_size[1]), np.uint
 for i in range(nimg_input):
     img = transform.rescale(images[i], input_size[0]/img_size[0]);
     img = central_crop(img, input_size);
-    test_images[i] = img.transpose(2,0,1);
-
+    test_images[i] = img.transpose(2,0,1)*255.0;
+    
     norm = normals[i];
     center = norm[img_size[0]/2, img_size[1]/2].reshape((1,1,3));
     label = cluster_normals(center*2-1, clusters);
     test_normals_center[i] = np.argmax(label)
-
+    
     normal_r = transform.rescale(norm, norm_size[0]/norm.shape[0])
     normal_r = central_crop(normal_r, norm_size);
     label = cluster_normals(normal_r*2-1, clusters);

@@ -30,17 +30,15 @@ transformer.set_raw_scale('data', 255)  # the reference model operates on images
 
 path='/home/NYU_dataset/';
 
-dataset = h5py.File(path+'train_normal_full.h5', 'r')
-clusters =  dataset['clusters'][:,:];
 
-
-niter = 5000
+niter = 10000
 test_interval=50
 test_iter=10
 train_loss = np.zeros(niter)
 test_loss = np.zeros(niter/test_interval)
 accuracy = np.zeros(niter/test_interval)
 
+write_interval = 500
 #train the network and see intermediate results
 for i in range(niter):
     solver.step(1)
@@ -58,6 +56,12 @@ for i in range(niter):
         accuracy[i // test_interval] = accu/test_iter
         print train_loss[i]
         print test_loss[i // test_interval]
+
+        if i % write_interval == 0:
+            np.save('/home/caffe_snapshot/train_loss_data_full',train_loss[:i]);
+            np.save('/home/caffe_snapshot/test_loss_data_full',test_loss[:i]);
+            np.save('/home/caffe_snapshot/accuracy_data_full',accuracy[:i]);
+
 
 np.save('/home/caffe_snapshot/train_loss_data_full',train_loss);
 np.save('/home/caffe_snapshot/test_loss_data_full',test_loss);

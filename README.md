@@ -26,6 +26,11 @@ predict full normal map
 
 `view_clustering.py`: visualize the clusters on a sphere
 
+###Training
+
+`train_dataset.py`, `train_dataset_center.py`
+
+
 ###Testing the network
 `vis_square.py` : function copied from caffe tutorials, help to visualize the parameters of conv layers
 

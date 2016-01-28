@@ -10,6 +10,32 @@ from skimage import transform
 import matplotlib.pyplot as plt
 
 #cluster the normals of the nb_img in path normal_path in 20 clusters
+def clustering_k_means_array(normals):
+   #compute numner of pixels for each image
+    nb_img = normals.shape[0]
+    normal_size = normals.shape[1:];
+    nb_pix  = normal_size[0]*normal_size[1];
+    all_normals=np.ndarray((nb_pix*nb_img,3));
+    count=0
+    for i in range(nb_img):
+        #read and correct image
+        normal_img = normals[i].reshape((nb_pix, 3));
+        normal_img = normal_img*2-1;
+        #normalize normals
+        norm = np.linalg.norm(normal_img,axis=1);
+        for j in range(nb_pix):
+            if norm[j] > 0.1:
+                all_normals[count]= normal_img[j]/norm[j]
+                count += 1;
+    print nb_pix*nb_img
+    print count
+    #clustering
+    kmeans = MiniBatchKMeans(init='k-means++', n_clusters=20);
+    kmeans.fit(all_normals[:count])
+    return kmeans.cluster_centers_
+
+
+#cluster the normals of the nb_img in path normal_path in 20 clusters
 def clustering_k_means(nb_img, normal_path):
     #compute numner of pixels for each image
     normal_size = io.imread(normal_path + '0000.png').shape;
@@ -37,9 +63,9 @@ def cluster_normals(normals, clusters):
     height=normals.shape[0];
     width=normals.shape[1];
     nb_clusters = clusters.shape[0];
-    
+
     classif_normals = np.zeros((height, width, nb_clusters));
-    
+
     for l in range(height):
         for c in range(width):
             #compute all distances
@@ -55,25 +81,19 @@ def random_crop(image, normal, size):
     decal = [image.shape[0]-size[0],image.shape[1]-size[1]];
     #tirer decalage aleatoire
     decal_alea = [random_integers(0,decal[0]),random_integers(0,decal[1])]
-    crop_img = util.crop(image, [[decal_alea[0],decal[0]-decal_alea[0]], [decal_alea[1],decal[1]-decal_alea[1]], [0,0]]);
-    #crop_depth = util.crop(image, [[decal_alea[0],decal[0]-decal_alea[0]], [decal_alea[1],decal[1]-decal_alea[1]]]);
-    crop_normal = util.crop(normal, [[decal_alea[0],decal[0]-decal_alea[0]], [decal_alea[1],decal[1]-decal_alea[1]], [0,0]]);
+    crop_img = image[decal_alea[0]:decal_alea[0]+size[0], decal_alea[1]:decal_alea[1]+size[1]]
+    crop_normal = normal[decal_alea[0]:decal_alea[0]+size[0], decal_alea[1]:decal_alea[1]+size[1]]
     return crop_img,crop_normal
 
     
 def central_crop(image, size):
-    pad_h1 = round((image.shape[0]-size[0])/2);
-    pad_h2 = (image.shape[0]-size[0])-pad_h1;
-    pad_w1 = round((image.shape[1]-size[1])/2);
-    pad_w2 = (image.shape[1]-size[1])-pad_w1;
-    if image.ndim == 2:
-        image = util.crop(image, [[pad_h1,pad_h2], [pad_w1, pad_w2]]);
-    elif image.ndim == 3:
-        image = util.crop(image, [[pad_h1,pad_h2], [pad_w1, pad_w2], [0,0]]);
-    return image;
+    pad_0 = round((image.shape[0]-size[0])/2);
+    pad_1 = round((image.shape[1]-size[1])/2);
+    image_c = image[pad_0:pad_0+size[0], pad_1:pad_1+size[1]]
+    return image_c;
 
-def random_scaling(image, normal, size):
-    scale = random.uniform(1.0, 1.5);
+def random_scaling(image, normal, size, a, b):
+    scale = random.uniform(a, b);
     #print scale
     #resize images
     img_r = transform.rescale(image, scale);
@@ -99,7 +119,54 @@ def random_color(image):
                 if image[line,col,c] > 1:
                     image[line,col,c] = 1
     return image;
-    
+
+def trim_values(image, pad=20):
+    im_size = image.shape
+    height = image.shape[0]
+    width = image.shape[1]
+
+    BBOX = compute_BBOX(image)
+    BBOX[0][0] -= pad
+    BBOX[0][1] -= pad
+    BBOX[1][0] += pad
+    BBOX[1][1] += pad
+
+    ratios = [(BBOX[1][0]-BBOX[0][0])*1.0/im_size[0], (BBOX[1][1]-BBOX[0][1])*1.0/im_size[1]]
+    #find ratio
+    ratio_ok = np.argmax(ratios);
+    ratio_tomove = np.argmin(ratios);
+
+    final_size = image.shape[ratio_tomove]*ratios[ratio_ok]
+    to_add = int((final_size - (BBOX[1][ratio_tomove]-BBOX[0][ratio_tomove]))/2)
+
+    BBOX[1][ratio_tomove]+=to_add
+    BBOX[0][ratio_tomove]-=to_add
+
+    return BBOX
+
+
+def compute_BBOX(image):
+    BBOX =[[image.shape[0], image.shape[1]], [0, 0]]
+    first = False;
+    last = False;
+    for line in range(image.shape[0]):
+        last = False;
+        for col in range(image.shape[1]):
+            if (image[line,col] != [255,255,255]).any():
+                first = True;
+                last = True;
+                if line < BBOX[0][0]:
+                    BBOX[0][0]= line
+                if line > BBOX[1][0]:
+                    BBOX[1][0] = line
+                if col < BBOX[0][1]:
+                    BBOX[0][1]= col
+                if col > BBOX[1][1]:
+                    BBOX[1][1] = col
+        if first == True and last == False:
+            break;
+    return BBOX;
+
 #compute n random view directions
 def random_dir(n=1):
     dirs=np.zeros((n,3));

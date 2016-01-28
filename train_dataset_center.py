@@ -41,6 +41,8 @@ train_loss = np.zeros(niter)
 test_loss = np.zeros(niter/test_interval)
 accuracy = np.zeros(niter/test_interval)
 
+write_interval = 500
+
 #train the network and see intermediate results
 for i in range(niter):
     solver.step(1)
@@ -59,8 +61,12 @@ for i in range(niter):
         print train_loss[i]
         print test_loss[i // test_interval]
 
-np.save('/home/caffe_snapshot/train_loss_data_center_fixed',train_loss);
-np.save('/home/caffe_snapshot/test_loss_data_center_fixed',test_loss);
-np.save('/home/caffe_snapshot/accuracy_data_center_fixed',accuracy);
+        if i % write_interval == 0:
+            np.save('/home/caffe_snapshot/train_loss_data_center',train_loss);
+            np.save('/home/caffe_snapshot/test_loss_data_center',test_loss);
+            np.save('/home/caffe_snapshot/accuracy_data_center',accuracy);
 
-    
+np.save('/home/caffe_snapshot/train_loss_data_center',train_loss);
+np.save('/home/caffe_snapshot/test_loss_data_center',test_loss);
+np.save('/home/caffe_snapshot/accuracy_data_center',accuracy);
+

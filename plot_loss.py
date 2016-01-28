@@ -2,9 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import h5py
 
-train = np.load('/home/caffe_snapshot/train_loss_data_sketch.npy')
-test = np.load('/home/caffe_snapshot/test_loss_data_sketch.npy')
-accu = np.load('/home/caffe_snapshot/accuracy_data_sketch.npy')
+train = np.load('/home/caffe_snapshot/train_loss_data_sketches.npy')
+test = np.load('/home/caffe_snapshot/test_loss_data_sketches.npy')
+#accu = np.load('/home/caffe_snapshot/accuracy_data_sketches.npy')
 
 niter=train.shape[0]
 #test = test[:4500/50]

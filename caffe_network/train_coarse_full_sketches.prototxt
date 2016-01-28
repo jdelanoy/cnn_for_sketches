@@ -9,7 +9,7 @@ layer {
   }
 
   hdf5_data_param {
-    source: "/home/NYU_dataset/train_normal_full.txt"
+    source: "/home/rendus/T1_train_dataset.txt"
     batch_size: 64
   }
 }
@@ -24,7 +24,7 @@ layer {
   }
 
   hdf5_data_param {
-    source: "/home/NYU_dataset/test_normal_full.txt"
+    source: "/home/rendus/T1_test_dataset.txt"
     batch_size: 32
   }
 }
@@ -319,7 +319,7 @@ layer {
     decay_mult: 0
   }
   inner_product_param {
-    num_output: 12760
+    num_output: 13398
     weight_filler {
       type: "gaussian"
       std: 0.005
@@ -338,7 +338,7 @@ layer {
     reshape_param {
       shape {
         dim: 0  # copy the dimension from below
-        dim: 20
+        dim: 21
         dim: 22
         dim: 29 # 
       }
