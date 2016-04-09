@@ -30,7 +30,7 @@ def clustering_k_means_array(normals):
     print nb_pix*nb_img
     print count
     #clustering
-    kmeans = MiniBatchKMeans(init='k-means++', n_clusters=20);
+    kmeans = MiniBatchKMeans(init='k-means++', n_clusters=50);
     kmeans.fit(all_normals[:count])
     return kmeans.cluster_centers_
 
@@ -76,6 +76,38 @@ def cluster_normals(normals, clusters):
 
     return classif_normals
 
+
+def compute_proba_dist(normal, clusters, sigma):
+    probas = np.zeros(clusters.shape[0]);
+    dist = np.zeros(clusters.shape[0]);
+    norm_coeff = 1/(sigma*sqrt(2*pi))
+    norm_coeff = 1/(sigma*sqrt(2*pi))
+    sum_p = 0
+    for c in range(clusters.shape[0]):
+        #compute geodesic distance
+        dot = np.dot(clusters[c], normal)
+        dot = max(min(dot,1.0),-1.0)
+        dist[c]=acos(dot)
+        probas[c] = norm_coeff*exp(-dist[c]*dist[c]/(2*sigma*sigma))
+        sum_p = sum_p + (probas[c])
+    probas = np.divide(probas, sum_p)
+    return probas
+
+#find the cluster for each normal
+def cluster_normals_gaussian(normals, clusters):
+    height=normals.shape[0];
+    width=normals.shape[1];
+    nb_clusters = clusters.shape[0];
+
+    classif_normals = np.zeros((nb_clusters, height, width));
+
+    for l in range(height):
+        for c in range(width):
+            if np.linalg.norm(normals[l,c]) < 0.1:
+                classif_normals[nb_clusters-1,l,c]=1
+            else:
+                classif_normals[:,l,c] = compute_proba_dist(normals[l,c], clusters, pi/15)
+    return classif_normals
 
 def random_crop(image, normal, size):
     decal = [image.shape[0]-size[0],image.shape[1]-size[1]];

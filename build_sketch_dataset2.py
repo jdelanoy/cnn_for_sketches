@@ -10,14 +10,14 @@ from math import *
 
 nb_trial = 6 
 path_r = '/home/rendus/'
-name = 'irons'
+name = 'vases_large_'
 
 files = glob.glob(path_r+'raw_data/*/depth/'+name+'*.png')
 
 norm_size = [55.0, 74.0];
 input_size=[228.0,304.0];
 
-max_size = 5000
+max_size = 2500
 
 nimg = len(files);
 if nimg < max_size:
@@ -30,7 +30,7 @@ normals_resize = np.ndarray((max_size, norm_size[0], norm_size[1], 4), np.float3
 depth_resize = np.ndarray((max_size, norm_size[0], norm_size[1]), np.float32);
 
 out_normals = np.ndarray((max_size, norm_size[0], norm_size[1]), np.float16);
-#out_depth = np.ndarray((max_size, norm_size[0], norm_size[1]), np.float16);
+out_depth = np.ndarray((max_size, norm_size[0], norm_size[1]), np.float16);
 out_images = np.ndarray((nb_trial, max_size, 4, input_size[0], input_size[1]), np.float16);
 
 for n in range(int(nb_max)):

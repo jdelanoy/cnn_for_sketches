@@ -9,8 +9,8 @@ layer {
   }
 
   hdf5_data_param {
-    source: "/home/rendus/T6_chairs_vases.txt"
-    batch_size: 8
+    source: "/home/rendus/modelnet_out/train_dataset.txt"
+    batch_size: 64
   }
 }
 
@@ -24,8 +24,8 @@ layer {
   }
 
   hdf5_data_param {
-    source: "/home/rendus/T6_candelabra_train_dataset.txt"
-    batch_size: 32
+    source: "/home/rendus/modelnet_out/test/test_dataset.txt"
+      batch_size: 64
   }
 }
 
@@ -40,7 +40,7 @@ layer {
     decay_mult: 1
   }
   param {
-    lr_mult: 0
+     lr_mult: 0
     decay_mult: 0
   }
   convolution_param {
@@ -319,7 +319,7 @@ layer {
     decay_mult: 0
   }
   inner_product_param {
-    num_output: 13398
+    num_output: 5586
     weight_filler {
       type: "gaussian"
       std: 0.005
@@ -334,17 +334,65 @@ layer {
    name: "reshape"
     type: "Reshape"
     bottom: "f_2"
-    top: "coarse"
+    top: "f2_reshape"
     reshape_param {
       shape {
         dim: 0  # copy the dimension from below
         dim: 21
-        dim: 22
-        dim: 29 # 
+        dim: 14
+        dim: 19 # 
       }
     }
   }
 
+#upscale by 4
+layer {
+      name: "upsample",
+      type: "Deconvolution"
+      bottom: "f2_reshape"
+      top: "coarse_large"
+      convolution_param {
+      	kernel_size: 8
+	stride: 4
+	num_output: 21
+	group: 21
+	pad:2
+	weight_filler: { type: "bilinear" }
+	bias_term: false
+      }
+      param { lr_mult: 0 decay_mult: 0 }
+}
+
+
+
+
+#crop coarse
+layer {
+  name: "crop"
+  type: "CropParam"
+  bottom: "coarse_large"
+  top: "coarse"
+    cropparam_param {
+      shape {
+        dim: 55
+        dim: 74 # 
+      }
+    }
+}
+
+
+
+
+layer {
+  name: "accuracy"
+  type: "Accuracy"
+  bottom: "coarse"
+  bottom: "label"
+  top: "accuracy"
+  include {
+    phase: TEST
+  }
+}
 
 layer {
   name: "loss"
@@ -357,13 +405,3 @@ layer {
   }
 }
 
-layer {
-  name: "accuracy"
-  type: "Accuracy"
-  bottom: "coarse"
-  bottom: "label"
-  top: "accuracy"
-  include {
-    phase: TEST
-  }
-}

@@ -183,20 +183,46 @@ layer {
   bottom: "f_1"
   top: "f_2"
   inner_product_param {
-    num_output: 13398
+    num_output: 5586
   }
 }
 layer {
    name: "reshape"
     type: "Reshape"
     bottom: "f_2"
-    top: "coarse"
+    top: "f2_reshape"
     reshape_param {
       shape {
         dim: 0  # copy the dimension from below
         dim: 21
-        dim: 22
-        dim: 29 # 
+        dim: 14
+        dim: 19 # 
       }
     }
   }
+layer {
+      name: "upsample",
+      type: "Deconvolution"
+      bottom: "f2_reshape"
+      top: "coarse_large"
+      convolution_param {
+      	kernel_size: 8
+	stride: 4
+	num_output: 21
+	group: 21
+	pad:2
+	bias_term: false
+      }
+}
+layer {
+  name: "crop"
+  type: "CropParam"
+  bottom: "coarse_large"
+  top: "output"
+    cropparam_param {
+      shape {
+        dim: 55
+        dim: 74 # 
+      }
+    }
+}
