@@ -1,0 +1,14 @@
+net: "caffe_network/train_full_gauss.prototxt"
+test_iter: 30
+test_interval: 100
+base_lr: 0.000001
+lr_policy: "step"
+gamma: 0.1
+stepsize: 20000
+display: 100
+max_iter: 100000
+momentum: 0.9
+weight_decay: 0.0005
+snapshot: 500
+snapshot_prefix: "/home/caffe_snapshot/snapshot_eigen_sketches_full"
+solver_mode: GPU

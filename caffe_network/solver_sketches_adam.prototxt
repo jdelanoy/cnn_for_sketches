@@ -1,0 +1,18 @@
+net: "caffe_network/train_coarse_full_sketches.prototxt"
+test_iter: 10
+test_interval: 500
+base_lr: 0.0001
+lr_policy: "step"
+gamma: 0.1
+stepsize: 500
+display: 500
+max_iter: 50000
+
+momentum: 0.9
+momentum2: 0.999
+delta: 0.00000001
+
+weight_decay: 0.0005
+snapshot: 1000
+snapshot_prefix: "/home/caffe_snapshot/snapshot_eigen_full_sketches"
+solver_mode: GPU
