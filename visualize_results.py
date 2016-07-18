@@ -15,11 +15,11 @@ import caffe
 path='/home/rendus/';
 #snapshotpath = "/home/caffe_snapshot/T6/all_10e-4/"
 #snapshotpath = "/home/caffe_snapshot/T1/vases+chairs_last_layers/"
-snapshotpath = "/home/caffe_snapshot/"
+snapshotpath = "/home/caffe_snapshot/scale1_modelnet/"
 #scale='coarse'
 scale='scale1'
 #scale='full'
-niter=30000
+niter=40000
 
 caffe.set_mode_cpu()
 net = caffe.Net('caffe_network/deploy_'+scale+'_sketches.prototxt',
@@ -35,7 +35,7 @@ normals = dataset['label'];
 clusters = dataset['clusters'][:,:];
 
 nb_test = 20
-for it in range(nb_test):
+for it in range(20,50):
     i = it * 1
     print i
     #load a test image

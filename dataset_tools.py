@@ -1,5 +1,5 @@
 import numpy as np
-import random
+import random,sys
 from math import *
 from scipy import spatial
 from sklearn.cluster import MiniBatchKMeans
@@ -8,6 +8,36 @@ from skimage import io
 from skimage import util
 from skimage import transform
 import matplotlib.pyplot as plt
+
+#cluster the depths of the nb_img in path normal_path in 20 clusters
+def clustering_k_means_depth(depths):
+   #compute numner of pixels for each image
+    nb_img = depths.shape[0]
+    depth_size = depths.shape[1:];
+    nb_pix  = depth_size[0]*depth_size[1];
+    all_depths=np.ndarray((nb_pix*nb_img,1));
+    count=0
+    for i in range(nb_img):
+        #read and correct image
+        depth_img = depths[i].reshape((nb_pix,1));
+        #depth_img = depth_img*2-1;
+        #depthize depths
+        for j in range(nb_pix):
+            if depth_img[j] < 0.99:
+                all_depths[count]= log(depth_img[j])
+                count += 1;
+    print nb_pix*nb_img
+    print count
+    #clustering
+    kmeans = MiniBatchKMeans(init='k-means++', n_clusters=40);
+    kmeans.fit(all_depths[:count])
+    return kmeans.cluster_centers_
+
+
+#cluster the depths of the nb_img in path normal_path in 20 clusters
+def clustering_log_depth(depths):
+    logs_r=np.linspace(0,0.9,50)
+    return logs_r#np.exp(logs_r)
 
 #cluster the normals of the nb_img in path normal_path in 20 clusters
 def clustering_k_means_array(normals):
@@ -20,8 +50,6 @@ def clustering_k_means_array(normals):
     for i in range(nb_img):
         #read and correct image
         normal_img = normals[i].reshape((nb_pix, 3));
-        normal_img = normal_img*2-1;
-        #normalize normals
         norm = np.linalg.norm(normal_img,axis=1);
         for j in range(nb_pix):
             if norm[j] > 0.1:
@@ -75,6 +103,40 @@ def cluster_normals(normals, clusters):
             classif_normals[l,c,np.argmin(dist)] = 1;
 
     return classif_normals
+
+
+
+def compute_proba_dist_depth(depth, clusters, sigma):
+    probas = np.zeros(clusters.shape[0]);
+    dist = np.zeros(clusters.shape[0]);
+    norm_coeff = 1/(sigma*sqrt(2*pi))
+    sum_p = 0
+    for c in range(clusters.shape[0]):
+        #compute geodesic distance
+        dist[c]=abs(clusters[c]-depth)
+        probas[c] = norm_coeff*exp(-dist[c]*dist[c]/(2*sigma*sigma))
+        sum_p = sum_p + (probas[c])
+    if sum_p == 0:
+        sys.stderr.write('=============ERROR IN PROBAS')
+    probas = np.divide(probas, sum_p)
+    return probas
+
+#find the cluster for each depth
+def cluster_depths_gaussian(depths, clusters):
+    height=depths.shape[0];
+    width=depths.shape[1];
+    nb_clusters = clusters.shape[0];
+    classif_depths = np.zeros((nb_clusters, height, width));
+    for l in range(height):
+        for c in range(width):
+            if depths[l,c] > 0.99:
+                classif_depths[nb_clusters-1,l,c]=1
+            elif depths[l,c] < 0.015:
+                classif_depths[0,l,c]=1
+            else:
+                classif_depths[:,l,c] = compute_proba_dist_depth(depths[l,c], clusters, 0.05)
+    return classif_depths
+
 
 
 def compute_proba_dist(normal, clusters, sigma):
@@ -232,5 +294,4 @@ def pad_string_with_0(i):
     for n in range(nb):
        padded = '0'+padded;
     return padded;
-
 
